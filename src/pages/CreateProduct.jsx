@@ -9,7 +9,7 @@ export default function CreateProduct() {
         price: "",
         imageUrl: ""
     });
-    const [imageFile, setImageFile] = useState(null);
+    const [imageFiles, setImageFiles] = useState([]);
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
@@ -17,23 +17,24 @@ export default function CreateProduct() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleImageUpload = async () => {
-        if (!imageFile) return;
-        const data = new FormData();
-        data.append("file", imageFile);
-        const res = await axiosInstance.post("/upload", data);
-        return res.data; // image URL
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         try {
-            const imageUrl = await handleImageUpload();
-            const productToSend = { ...form, imageUrl };
-            await axiosInstance.post("/products", productToSend);
+            // 1. Salva il prodotto base
+            const res = await axiosInstance.post("/products", form);
+            const newProductId = res.data.id;
+
+            // 2. Carica le immagini (una per una o tutte insieme)
+            for (let file of imageFiles) {
+                const data = new FormData();
+                data.append("file", file);
+                await axiosInstance.post(`/products/${newProductId}/images`, data);
+            }
+
             navigate("/products");
         } catch (err) {
-            setError("Errore nella creazione del prodotto");
+            console.error("Errore nella creazione:", err);
         }
     };
 
@@ -44,9 +45,21 @@ export default function CreateProduct() {
                 <input name="title" placeholder="Titolo" value={form.title} onChange={handleChange} required /><br />
                 <textarea name="description" placeholder="Descrizione" value={form.description} onChange={handleChange} required /><br />
                 <input type="number" name="price" placeholder="Prezzo" value={form.price} onChange={handleChange} required /><br />
-                <input type="file" onChange={(e) => setImageFile(e.target.files[0])} required /><br />
+                <input
+                    type="file"
+                    multiple
+                    onChange={(e) => setImageFiles([...e.target.files])}
+                />
                 <button type="submit">Salva</button>
             </form>
+            {imageFiles.map((file, index) => (
+                <img
+                    key={index}
+                    src={URL.createObjectURL(file)}
+                    alt="preview"
+                    style={{ width: "100px", margin: "5px" }}
+                />
+            ))}
             {error && <p style={{ color: "red" }}>{error}</p>}
         </div>
     );
