@@ -7,6 +7,7 @@ export default function ProductList() {
     const [products, setProducts] = useState([]);
     const { roles } = useAuth();
     const isAdmin = roles.includes("ROLE_ADMIN");
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     const actionButton = {
         padding: "0.5rem",
@@ -42,11 +43,13 @@ export default function ProductList() {
             <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
                 {products.map(product => (
                     <div key={product.id} style={{ border: "1px solid #ccc", padding: "1rem", width: "220px" }}>
-                        <img
-                            src={product.imageUrl}
-                            alt={product.title}
-                            style={{ width: "100%", height: "150px", objectFit: "cover" }}
-                        />
+                        {product.images?.length > 0 && (
+                            <img
+                                src={`${BASE_URL}${product.images[0].url}`}
+                                alt={product.title}
+                                style={{ width: "100%", height: "150px", objectFit: "cover" }}
+                            />
+                        )}
                         <h3>{product.title}</h3>
                         <p style={{ fontSize: "0.9rem" }}>{product.description}</p>
                         <strong>€ {product.price.toFixed(2)}</strong>
