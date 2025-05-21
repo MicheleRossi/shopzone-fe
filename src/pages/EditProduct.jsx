@@ -31,7 +31,7 @@ export default function EditProduct() {
             const formData = new FormData();
             formData.append("file", file);
             try {
-                const res = await axiosInstance.post(`/products/${id}/images`, formData);
+                const res = await axiosInstance.post(`images/products/${id}/images`, formData);
                 setProductImages((prev) => [...prev, res.data]);
             } catch (err) {
                 console.error("Errore upload immagine:", err);
@@ -53,10 +53,24 @@ export default function EditProduct() {
     const handleDeleteImage = async (imageId) => {
         if (!window.confirm("Vuoi davvero eliminare questa immagine?")) return;
         try {
-            await axiosInstance.delete(`/product-images/${imageId}`);
+            await axiosInstance.delete(`images/product-images/${imageId}`);
             setProductImages(productImages.filter((img) => img.id !== imageId));
         } catch (err) {
             console.error("Errore eliminazione immagine:", err);
+        }
+    };
+
+    const handleSetMainImage = async (imageId) => {
+        try {
+            await axiosInstance.put(`/images/${imageId}/set-main`);
+            setProductImages((prev) =>
+                prev.map(img => ({
+                    ...img,
+                    mainImage: img.id === imageId
+                }))
+            );
+        } catch (err) {
+            console.error("Errore impostazione immagine principale:", err);
         }
     };
 
@@ -95,9 +109,31 @@ export default function EditProduct() {
                                 border: "none",
                                 cursor: "pointer"
                             }}
-                            onClick={() => handleDeleteImage(img.id)}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleDeleteImage(img.id);
+                            }}
+
                         >
                             &times;
+                        </button>
+                        <button
+                            style={{
+                                position: "absolute",
+                                bottom: "0",
+                                left: "0",
+                                background: "green",
+                                color: "white",
+                                border: "none",
+                                cursor: "pointer"
+                            }}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleSetMainImage(img.id);
+                            }}
+
+                        >
+                            ⭐
                         </button>
                     </div>
                 ))}

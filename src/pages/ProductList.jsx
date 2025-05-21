@@ -45,7 +45,7 @@ export default function ProductList() {
                     <div key={product.id} style={{ border: "1px solid #ccc", padding: "1rem", width: "220px" }}>
                         {product.images?.length > 0 && (
                             <img
-                                src={`${BASE_URL}${product.images[0].url}`}
+                                src={`${(product.images.find(img => img.mainImage) || product.images[0]).url}`}
                                 alt={product.title}
                                 style={{ width: "100%", height: "150px", objectFit: "cover" }}
                             />
